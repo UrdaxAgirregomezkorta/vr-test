@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <title>Cubes</title>
     <meta name="description" content="Cubes - A-Frame">
-    <script src="../../../dist/aframe-master.min.js"></script>
+    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
   </head>
   <body>
     <a-scene background="color: #ECECEC">
@@ -12,8 +12,10 @@
         <a-mixin id="box" geometry="depth: 0.1; height: 0.1; width: 0.1"></a-mixin>
         <a-mixin id="frame-edge" geometry="primitive: box; depth: 10; height: 0.1; width: 0.1"
                                  material="color: #404040"></a-mixin>
-        <img id="shadow" src="../../assets/img/radial-shadow-2.png">
-        <img id="texture" src="http://i.imgur.com/6qHKYGf.png" crossorigin>
+        <!-- Inline fallback for shadow to avoid 404 on Pages if the asset folder is missing -->
+        <img id="shadow" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAAgCAYAAABr3G9fAAAACXBIWXMAAAsTAAALEwEAmpwYAAABH0lEQVR4nO2XwQ2DMBREz4QmQ6USq0KQp0k6Qp0gqkKp1H+Qk9xq2b3s3t0/O8zM7M8m2Z2Z2Z2Z2Z2b2a8eQmC6gCj1X6DYb7wGQi8D0G6h9oL5JxGfE7g2x1wR+gz2g3Qk8Q3Yg+QX4g+QH4g+QH4g+QH4g+QH4g+QH4g+QH4g+QH4g+QH4g+QH4g+QH4g+QH4g+QH4g+QH4g+QH4g+QH4g+QH4g+QH4g+QH4g+QH4g+QH4g+QH4g+A8h6w1A5k1KjHnN9k1r6gAAAABJRU5ErkJggg==">
+        <!-- Use HTTPS for external textures to avoid mixed-content blocking -->
+        <img id="texture" src="https://i.imgur.com/6qHKYGf.png" crossorigin="anonymous">
       </a-assets>
 
       <a-entity position="0 0 -11" rotation="0 45 0">
