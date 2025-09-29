@@ -1,69 +1,125 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8" />
-    <title>Post Processing Bloom Effect</title>
-    <meta name="description" content="Post Processing Bloom Effect • A-Frame" />
-    <script type="importmap">
-      {
-        "imports": {
-          "aframe": "../../../dist/aframe-master.module.min.js",
-          "three": "https://cdn.jsdelivr.net/npm/super-three@0.173.5/build/three.module.js",
-          "three/addons/": "https://cdn.jsdelivr.net/npm/super-three@0.173.5/examples/jsm/"
-        }
-      }
-    </script>
-    <script type="module">
-      import AFRAME from 'aframe';
-    </script>
-    <script src="../../js/info-message.js" type="module"></script>
-    <script src="./effect-controls.js" type="module"></script>
-    <script src="./bloom.js" type="module"></script>
-  </head>
 
-  <body>
-    <a-scene
-      bloom="threshold: 1.0; strength: 0.3; radius: 1;"
-      background="color: #000000"
-      renderer="toneMapping: ACESFilmic;"
-      info-message="htmlSrc: #messageText"
-    >
-      <a-assets>
-        <!-- model by arturs.vitas https://skfb.ly/owUr9 -->
-        <a-asset-item id="testbed" src="https://cdn.aframe.io/examples/post-processing/fancy-car.glb"></a-asset-item>
-        <a-asset-item id="messageText" src="message.html"></a-asset-item>
-      </a-assets>
+<head>
+	<title>VR Art Gallery</title>
+	<meta name="description" content="A-Frame Examples">
+	<script src="js/aframe-master.1.0.4.min.js"></script>
+	<script src="js/aframe-environment-component.min.js"></script>
+	<script src="js/extended-wasd-controls.js"></script>
+</head>
 
-      <a-entity id="rig" position="0 0 2">
-        <a-entity id="camera" position="0 1.6 0" camera look-controls wasd-controls></a-entity>
+<body>
 
-        <a-entity id="lhand" effect-controls="hand: left;"> </a-entity>
+<script>
+AFRAME.registerComponent("boundary",
+{
+	init: function()
+	{
 
-        <a-entity id="rhand" effect-controls="hand: right;"> </a-entity>
-      </a-entity>
+	},
 
-      <a-entity
-        id="base"
-        geometry="primitive: cylinder; height: 0.1; radius: 1.93"
-        position="0 0 -2"
-        material="color: #201d1d"
-        shadow
-        animation="property: rotation; to: 0 360 0 ; loop: true; dur: 15000; easing: linear;"
-      >
-        <a-entity id="tooncar" gltf-model="#testbed" position="0 0.050 0" scale="2 2 2" shadow> </a-entity>
+	tick: function(time, deltaTime)
+	{
+		if (this.el.object3D.position.z < -2.5)
+			this.el.object3D.position.z = -2.5;
+		if (this.el.object3D.position.z >  2.5)
+			this.el.object3D.position.z =  2.5;
+		if (this.el.object3D.position.x < -2.5)
+			this.el.object3D.position.x = -2.5;
+		if (this.el.object3D.position.x >  2.5)
+			this.el.object3D.position.x =  2.5;
 
-        <a-entity
-          id="neon01"
-          geometry="primitive: torus; radius: 1.92; radiusTubular: 0.02; segmentsRadial: 50; segmentsTubular: 40"
-          material="color: #d100e0; emissive: #b300a4; emissiveIntensity: 9.34"
-          rotation="90 0 0"
-        >
-        </a-entity>
-      </a-entity>
+	}
+});
+       
+</script>
+<!-- 
+	disable press "F" to enter fullscreen mode.
+ -->
+<a-scene environment="preset: default; lighting: none;" 
+	keyboard-shortcuts="enterVR: false;">
+	
+	<!-- Dim ambient lighting.  -->
+	<a-light type="ambient" color="#222222"></a-light>
+	<a-light type="point" color="#CCCCCC" position="0 3 0"></a-light>
+	
+	<a-assets timeout="10000">
+		<img id="crate" 	src="images/crate.jpg" />
+		<img id="grid" 		src="images/color-grid.png" />
+		<img id="wood" 		src="images/wood.jpg" />
+		<img id="plaster"	src="images/plaster.jpg" />
+		<img id="puppy" 	src="images/photos/puppy.jpg" />
+		<img id="campfire" 	src="images/photos/campfire.jpg" />
+		<img id="bubbles" 	src="images/photos/bubbles.jpg" />
+		<img id="lilac" 	src="images/photos/lilac.jpg" />
+		<a-asset-item id="table" src="models/table.glb"></a-asset-item>
+		<a-asset-item id="picture" src="models/picture.glb"></a-asset-item>
+		<a-asset-item id="pagoda" src="models/pagoda.glb"></a-asset-item>
+		<!-- <video id="video" loop="true" src="video/sintel.mp4"></video> -->
+	</a-assets>
 
-      <a-entity id="ambient" light="type: ambient; intensity: 0.48; color: #ffffff"> </a-entity>
+	<!--
+		create a camera entity
+	-->
+	<a-entity id="camera" camera
+		position="0 1.6 0"
+		look-controls wasd-controls="acceleration: 4;" boundary>
+	</a-entity>
 
-      <a-entity id="point01" light="color: #7cd2fe; intensity: 5; type: point;" position="0 3.51 -1"> </a-entity>
-    </a-scene>
-  </body>
+	
+	<!-- floor -->  
+	<a-box width="6.5" depth="6.5" height="0.1" position="0 0 0" material="src:#wood;"></a-box>
+
+	<!-- walls -->
+	<a-box width="6.5" depth="0.1" height="3" position="0 1.5 -3.1" material="src:#plaster; repeat: 4.2 2;"></a-box>
+
+	<a-box width="6.5" depth="0.1" height="3" position="0 1.5 3.1" material="src:#plaster; repeat: 4.2 2;"></a-box>
+
+	<a-box width="6.5" depth="0.1" height="3" position="3.1 1.5 0" rotation="0 90 0" material="src:#plaster; repeat: 4.2 2;"></a-box>
+
+	<a-box width="6.5" depth="0.1" height="3" position="-3.1 1.5 0" rotation="0 90 0" material="src:#plaster; repeat: 4.2 2;"></a-box>
+
+	<!-- artwork -->
+	
+	<a-entity position="0 1.2 -3" rotation="0 270 0" scale="1 1 1" gltf-model="#picture">
+		<a-plane position="0.02 0.68 0" rotation="0 90 0" material="shader:flat; src:#puppy; side:double;"></a-plane>
+	</a-entity>
+
+	<!-- To fix. See: 
+		https://github.com/aframevr/aframe/issues/3647 
+		https://stackoverflow.com/questions/57542229/autoplaying-videosphere-from-a-frame-is-not-working-on-any-browsersafari-chrome
+		Trigger when user moves close to plane?
+	
+
+	<a-video  
+			id = "video-display"
+			width="1.77" height="1" 
+			position="0 2 -2"
+			src="#video">
+		</a-video>
+	-->
+	
+	<a-entity position="3 1.2 0" rotation="0 180 0" scale="1 1 1.6" gltf-model="#picture">
+		<a-plane position="0.02 0.68 0" rotation="0 90 0" material="shader:flat; src:#campfire; side:double;"></a-plane>
+	</a-entity>
+
+	<a-entity position="-3 1.2 0" rotation="0 0 0" scale="1 1 1" gltf-model="#picture">
+		<a-plane position="0.02 0.68 0" rotation="0 90 0" material="shader:flat; src:#bubbles; side:double;"></a-plane>
+	</a-entity>
+
+	<a-entity position="0 1.2 3" rotation="0 90 0" scale="1 1 1.33" gltf-model="#picture">
+		<a-plane position="0.02 0.68 0" rotation="0 90 0" material="shader:flat; src:#lilac; side:double;"></a-plane>
+	</a-entity>
+
+	<!-- table display -->
+	<a-entity position="-2.5 0 -2.5" color="#0000FF" gltf-model="#table">
+	</a-entity>
+
+	<a-entity position="-2.5 0.9 -2.5" scale="0.1 0.1 0.1" color="#0000FF" gltf-model="#pagoda">
+	</a-entity>
+
+</a-scene>
+
+</body>
 </html>
