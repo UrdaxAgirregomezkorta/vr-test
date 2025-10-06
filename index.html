@@ -1,125 +1,271 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-	<title>VR Art Gallery</title>
-	<meta name="description" content="A-Frame Examples">
-	<script src="js/aframe-master.1.0.4.min.js"></script>
-	<script src="js/aframe-environment-component.min.js"></script>
-	<script src="js/extended-wasd-controls.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VR Interactive Gallery</title>
+  <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+  <script src="https://unpkg.com/aframe-environment-component@1.3.2/dist/aframe-environment-component.min.js"></script>
+  <script>
+    // Component for object interaction
+    AFRAME.registerComponent('interactive-object', {
+      schema: {
+        name: {type: 'string', default: 'Object'},
+        description: {type: 'string', default: 'An interactive object'}
+      },
+      init: function() {
+        const el = this.el;
+        const data = this.data;
+        const originalScale = el.getAttribute('scale');
+        
+        // Create text label
+        const label = document.createElement('a-entity');
+        label.setAttribute('text', {
+          value: data.name,
+          align: 'center',
+          width: 3,
+          color: '#ffffff',
+          shader: 'msdf',
+          font: 'https://cdn.aframe.io/examples/ui/Viga-Regular.json'
+        });
+        label.setAttribute('position', '0 1.5 0');
+        label.setAttribute('visible', false);
+        label.classList.add('label');
+        el.appendChild(label);
+        
+        // Hover/gaze interaction
+        el.addEventListener('mouseenter', function() {
+          el.setAttribute('scale', {
+            x: originalScale.x * 1.2,
+            y: originalScale.y * 1.2,
+            z: originalScale.z * 1.2
+          });
+          label.setAttribute('visible', true);
+        });
+        
+        el.addEventListener('mouseleave', function() {
+          el.setAttribute('scale', originalScale);
+          label.setAttribute('visible', false);
+        });
+        
+        // Click interaction
+        el.addEventListener('click', function() {
+          // Create description panel
+          const panel = document.getElementById('info-panel');
+          const panelText = document.getElementById('panel-text');
+          panelText.setAttribute('value', data.name + '\n\n' + data.description);
+          panel.setAttribute('visible', true);
+          
+          // Hide panel after 4 seconds
+          setTimeout(() => {
+            panel.setAttribute('visible', false);
+          }, 4000);
+          
+          // Color change animation
+          const originalColor = el.getAttribute('material').color;
+          el.setAttribute('animation', {
+            property: 'material.color',
+            from: '#ffffff',
+            to: originalColor,
+            dur: 1000,
+            easing: 'easeInOutQuad'
+          });
+        });
+      }
+    });
+
+    // Teleport component
+    AFRAME.registerComponent('teleport-point', {
+      schema: {
+        target: {type: 'vec3', default: {x: 0, y: 0, z: 0}}
+      },
+      init: function() {
+        const el = this.el;
+        const data = this.data;
+        const camera = document.querySelector('#camera');
+        
+        el.addEventListener('click', function() {
+          // Animate camera movement
+          camera.setAttribute('animation', {
+            property: 'position',
+            to: data.target,
+            dur: 1000,
+            easing: 'easeInOutQuad'
+          });
+        });
+        
+        el.addEventListener('mouseenter', function() {
+          el.setAttribute('scale', '1.3 1.3 1.3');
+        });
+        
+        el.addEventListener('mouseleave', function() {
+          el.setAttribute('scale', '1 1 1');
+        });
+      }
+    });
+  </script>
 </head>
-
 <body>
+  <a-scene>
+    <!-- Camera with cursor -->
+    <a-entity id="camera" camera position="0 1.6 5" look-controls wasd-controls>
+      <a-cursor
+        color="#4CC3D9"
+        fuse="true"
+        fuse-timeout="1500"
+        raycaster="objects: .interactive, .teleport">
+      </a-cursor>
+    </a-entity>
 
-<script>
-AFRAME.registerComponent("boundary",
-{
-	init: function()
-	{
+    <!-- Lighting -->
+    <a-light type="ambient" color="#BBB" intensity="0.8"></a-light>
+    <a-light type="directional" color="#FFF" intensity="0.6" position="2 4 2"></a-light>
+    <a-light type="point" color="#F4A460" intensity="1" position="0 3 -3"></a-light>
 
-	},
+    <!-- Environment -->
+    <a-sky color="#87CEEB"></a-sky>
+    <a-plane position="0 0 0" rotation="-90 0 0" width="30" height="30" color="#7BC8A4" shadow="receive: true"></a-plane>
+    
+    <!-- Back wall -->
+    <a-plane position="0 3 -8" rotation="0 0 0" width="30" height="6" color="#D4AF37" opacity="0.3"></a-plane>
 
-	tick: function(time, deltaTime)
-	{
-		if (this.el.object3D.position.z < -2.5)
-			this.el.object3D.position.z = -2.5;
-		if (this.el.object3D.position.z >  2.5)
-			this.el.object3D.position.z =  2.5;
-		if (this.el.object3D.position.x < -2.5)
-			this.el.object3D.position.x = -2.5;
-		if (this.el.object3D.position.x >  2.5)
-			this.el.object3D.position.x =  2.5;
+    <!-- Interactive Object 1: Crystal Sphere -->
+    <a-sphere 
+      class="interactive"
+      position="-3 1.5 -2" 
+      radius="0.8" 
+      color="#FF6B9D"
+      metalness="0.8"
+      roughness="0.2"
+      shadow="cast: true"
+      interactive-object="name: Crystal Sphere; description: A mystical orb that glows with inner energy. Legend says it holds ancient wisdom."
+      animation="property: rotation; to: 0 360 0; loop: true; dur: 8000; easing: linear">
+    </a-sphere>
 
-	}
-});
-       
-</script>
-<!-- 
-	disable press "F" to enter fullscreen mode.
- -->
-<a-scene environment="preset: default; lighting: none;" 
-	keyboard-shortcuts="enterVR: false;">
-	
-	<!-- Dim ambient lighting.  -->
-	<a-light type="ambient" color="#222222"></a-light>
-	<a-light type="point" color="#CCCCCC" position="0 3 0"></a-light>
-	
-	<a-assets timeout="10000">
-		<img id="crate" 	src="images/crate.jpg" />
-		<img id="grid" 		src="images/color-grid.png" />
-		<img id="wood" 		src="images/wood.jpg" />
-		<img id="plaster"	src="images/plaster.jpg" />
-		<img id="puppy" 	src="images/photos/puppy.jpg" />
-		<img id="campfire" 	src="images/photos/campfire.jpg" />
-		<img id="bubbles" 	src="images/photos/bubbles.jpg" />
-		<img id="lilac" 	src="images/photos/lilac.jpg" />
-		<a-asset-item id="table" src="models/table.glb"></a-asset-item>
-		<a-asset-item id="picture" src="models/picture.glb"></a-asset-item>
-		<a-asset-item id="pagoda" src="models/pagoda.glb"></a-asset-item>
-		<!-- <video id="video" loop="true" src="video/sintel.mp4"></video> -->
-	</a-assets>
+    <!-- Interactive Object 2: Golden Pyramid -->
+    <a-cone 
+      class="interactive"
+      position="0 1 -3" 
+      radius-bottom="1" 
+      radius-top="0"
+      height="2"
+      color="#FFD700"
+      metalness="0.9"
+      roughness="0.1"
+      shadow="cast: true"
+      rotation="0 0 0"
+      interactive-object="name: Golden Pyramid; description: An ancient artifact from a lost civilization. Its geometric perfection is mesmerizing."
+      animation="property: position; to: 0 1.3 -3; dir: alternate; loop: true; dur: 2000; easing: easeInOutSine">
+    </a-cone>
 
-	<!--
-		create a camera entity
-	-->
-	<a-entity id="camera" camera
-		position="0 1.6 0"
-		look-controls wasd-controls="acceleration: 4;" boundary>
-	</a-entity>
+    <!-- Interactive Object 3: Emerald Cube -->
+    <a-box 
+      class="interactive"
+      position="3 1.2 -2" 
+      width="1.5" 
+      height="1.5" 
+      depth="1.5"
+      color="#50C878"
+      metalness="0.7"
+      roughness="0.3"
+      shadow="cast: true"
+      rotation="15 45 0"
+      interactive-object="name: Emerald Cube; description: A perfectly carved cube of pure emerald. Its surfaces reflect light in captivating patterns."
+      animation="property: rotation; to: 375 405 360; loop: true; dur: 10000; easing: linear">
+    </a-box>
 
-	
-	<!-- floor -->  
-	<a-box width="6.5" depth="6.5" height="0.1" position="0 0 0" material="src:#wood;"></a-box>
+    <!-- Interactive Object 4: Ruby Torus -->
+    <a-torus 
+      class="interactive"
+      position="1.5 2 1" 
+      radius="0.8" 
+      radius-tubular="0.2"
+      color="#E0115F"
+      metalness="0.85"
+      roughness="0.15"
+      shadow="cast: true"
+      rotation="90 0 0"
+      interactive-object="name: Ruby Torus; description: A ring of concentrated ruby energy. It hums with a mysterious frequency."
+      animation="property: rotation; to: 90 360 0; loop: true; dur: 6000; easing: linear">
+    </a-torus>
 
-	<!-- walls -->
-	<a-box width="6.5" depth="0.1" height="3" position="0 1.5 -3.1" material="src:#plaster; repeat: 4.2 2;"></a-box>
+    <!-- Interactive Object 5: Sapphire Octahedron -->
+    <a-octahedron 
+      class="interactive"
+      position="-2 1.8 1.5" 
+      radius="0.9"
+      color="#0F52BA"
+      metalness="0.8"
+      roughness="0.2"
+      shadow="cast: true"
+      interactive-object="name: Sapphire Octahedron; description: A dual pyramid of sapphire crystal. It seems to pulse with cosmic energy."
+      animation="property: rotation; to: 360 360 0; loop: true; dur: 7000; easing: linear">
+    </a-octahedron>
 
-	<a-box width="6.5" depth="0.1" height="3" position="0 1.5 3.1" material="src:#plaster; repeat: 4.2 2;"></a-box>
+    <!-- Information Panel -->
+    <a-entity id="info-panel" position="0 2.5 -1.5" visible="false">
+      <a-plane width="3" height="2" color="#000000" opacity="0.8"></a-plane>
+      <a-text 
+        id="panel-text"
+        position="0 0 0.01"
+        width="2.8"
+        align="center"
+        color="#FFFFFF"
+        wrap-count="30"
+        value="">
+      </a-text>
+    </a-entity>
 
-	<a-box width="6.5" depth="0.1" height="3" position="3.1 1.5 0" rotation="0 90 0" material="src:#plaster; repeat: 4.2 2;"></a-box>
+    <!-- Teleport Points -->
+    <a-cylinder 
+      class="teleport"
+      position="-4 0.1 3" 
+      radius="0.5" 
+      height="0.2" 
+      color="#4CC3D9"
+      opacity="0.7"
+      teleport-point="target: -4 1.6 3">
+      <a-text value="Teleport 1" align="center" position="0 0.5 0" width="3" color="#FFFFFF"></a-text>
+    </a-cylinder>
 
-	<a-box width="6.5" depth="0.1" height="3" position="-3.1 1.5 0" rotation="0 90 0" material="src:#plaster; repeat: 4.2 2;"></a-box>
+    <a-cylinder 
+      class="teleport"
+      position="4 0.1 3" 
+      radius="0.5" 
+      height="0.2" 
+      color="#4CC3D9"
+      opacity="0.7"
+      teleport-point="target: 4 1.6 3">
+      <a-text value="Teleport 2" align="center" position="0 0.5 0" width="3" color="#FFFFFF"></a-text>
+    </a-cylinder>
 
-	<!-- artwork -->
-	
-	<a-entity position="0 1.2 -3" rotation="0 270 0" scale="1 1 1" gltf-model="#picture">
-		<a-plane position="0.02 0.68 0" rotation="0 90 0" material="shader:flat; src:#puppy; side:double;"></a-plane>
-	</a-entity>
+    <a-cylinder 
+      class="teleport"
+      position="0 0.1 -6" 
+      radius="0.5" 
+      height="0.2" 
+      color="#4CC3D9"
+      opacity="0.7"
+      teleport-point="target: 0 1.6 -6">
+      <a-text value="Teleport 3" align="center" position="0 0.5 0" width="3" color="#FFFFFF"></a-text>
+    </a-cylinder>
 
-	<!-- To fix. See: 
-		https://github.com/aframevr/aframe/issues/3647 
-		https://stackoverflow.com/questions/57542229/autoplaying-videosphere-from-a-frame-is-not-working-on-any-browsersafari-chrome
-		Trigger when user moves close to plane?
-	
+    <a-cylinder 
+      class="teleport"
+      position="0 0.1 5" 
+      radius="0.5" 
+      height="0.2" 
+      color="#4CC3D9"
+      opacity="0.7"
+      teleport-point="target: 0 1.6 5">
+      <a-text value="Start" align="center" position="0 0.5 0" width="3" color="#FFFFFF"></a-text>
+    </a-cylinder>
 
-	<a-video  
-			id = "video-display"
-			width="1.77" height="1" 
-			position="0 2 -2"
-			src="#video">
-		</a-video>
-	-->
-	
-	<a-entity position="3 1.2 0" rotation="0 180 0" scale="1 1 1.6" gltf-model="#picture">
-		<a-plane position="0.02 0.68 0" rotation="0 90 0" material="shader:flat; src:#campfire; side:double;"></a-plane>
-	</a-entity>
+    <!-- Decorative elements -->
+    <a-entity position="0 5 -8">
+      <a-text value="VR INTERACTIVE GALLERY" align="center" width="12" color="#FFD700"></a-text>
+    </a-entity>
 
-	<a-entity position="-3 1.2 0" rotation="0 0 0" scale="1 1 1" gltf-model="#picture">
-		<a-plane position="0.02 0.68 0" rotation="0 90 0" material="shader:flat; src:#bubbles; side:double;"></a-plane>
-	</a-entity>
-
-	<a-entity position="0 1.2 3" rotation="0 90 0" scale="1 1 1.33" gltf-model="#picture">
-		<a-plane position="0.02 0.68 0" rotation="0 90 0" material="shader:flat; src:#lilac; side:double;"></a-plane>
-	</a-entity>
-
-	<!-- table display -->
-	<a-entity position="-2.5 0 -2.5" color="#0000FF" gltf-model="#table">
-	</a-entity>
-
-	<a-entity position="-2.5 0.9 -2.5" scale="0.1 0.1 0.1" color="#0000FF" gltf-model="#pagoda">
-	</a-entity>
-
-</a-scene>
-
+  </a-scene>
 </body>
 </html>
