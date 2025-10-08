@@ -6,14 +6,6 @@ Proyecto de ejemplo de A-Frame con galería VR interactiva.
 
 🌐 **URL del sitio:** https://urdaxagirregomezkorta.github.io/vr-test/
 
-## Desarrollo local
-
-```bash
-# Servidor local
-python -m http.server 8000
-# Abrir http://localhost:8000/
-```
-
 ## Tecnologías
 
 - A-Frame 1.4.0
